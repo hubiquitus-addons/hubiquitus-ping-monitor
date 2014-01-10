@@ -1,0 +1,17 @@
+{
+  "name": "hubiquitus-ping-monitor",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hubiquitus-addons/hubiquitus-ping-monitor"
+  },
+  "bin": {
+    "h-ping-monitor": "./app.js"
+  },
+  "dependencies": {
+    "commander": "2.1.*",
+    "lodash": "2.*",
+    "express": "3.4.*"
+  },
+  "main": "./app.js"
+}
