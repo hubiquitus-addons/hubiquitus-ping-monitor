@@ -4,6 +4,7 @@ var express = require('express');
 var _ = require('lodash');
 var commander = require('commander');
 var fs = require('fs');
+var moment = require('moment');
 
 const timeout = 60000;
 
@@ -36,18 +37,27 @@ console.log('Expected results', expectedResults);
 
 var app = express();
 app.engine('html', require('ejs').__express);
+app.use('/static', express.static(__dirname + '/static'));
 app.set('views', './');
 var names = {};
 
 app.get('/', function (req, res) {
   var results = computeResults();
+  var data = {};
+  _.forEach(names, function (containers, name) {
+    data[name] = {
+      expectedUpCount: expectedResults[name],
+      upCount: results[name],
+      containers: containers
+    }
+  });
+  if (conf.debug) console.log('\n', new Date(), 'rendering', data);
   res.render('index.html', {
-    expectedResults: expectedResults,
-    results: results,
-    containers: names,
+    containers: data,
     now: new Date().getTime(),
     timeout: timeout,
-    _: _
+    _: _,
+    moment: moment
   });
 });
 

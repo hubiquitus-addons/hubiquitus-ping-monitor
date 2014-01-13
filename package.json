@@ -12,7 +12,8 @@
     "commander": "2.1.*",
     "lodash": "2.*",
     "express": "3.4.*",
-    "ejs": "0.8.*"
+    "ejs": "0.8.*",
+    "moment": "2.5.0"
   },
   "main": "./app.js"
 }
