@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitor</title>
+</head>
+<body style="font-family: monospace;">
+  <h1>Monitor</h1>
+  <h2>Status</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>UP (real/expected)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% _.forEach(expectedResults, function (count, name) { %>
+        <tr>
+          <td><%= name %></td>
+          <td>
+            <% if (results[name] === expectedResults[name]) { %>
+              <span style="color: green;">UP</span>
+            <% } else { %>
+              <span style="color: red;">DOWN</span>
+            <% } %>
+          </td>
+          <td><%= results[name] %> / <%= expectedResults[name] %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <h2>Details</h2>
+  <ul>
+    <% _.forEach(containers, function (ids, name) { %>
+      <li><b><%= name %></b>
+        <ul>
+          <% _.forEach(ids, function (data, id) { %>
+            <li>
+              <span style="color: blue;"><%= id %> :</span>
+              <span style="color: magenta"><%= data.ip %></span>
+              <% if (now - data.date <= timeout) { %>
+                <span style="color: green;">UP</span>
+              <% } else { %>
+                <span style="color: red;">DOWN</span>
+              <% } %>
+              <br>Last ping : <b><%= new Date(data.date) %></b>
+            </li>
+          <% }); %>
+        </ul>
+      </li>
+    <% }); %>
+  </ul>
+</body>
+</html>

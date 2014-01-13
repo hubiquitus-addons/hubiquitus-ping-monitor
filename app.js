@@ -35,10 +35,20 @@ console.log('Expected results', expectedResults);
 /* Rest services */
 
 var app = express();
+app.engine('html', require('ejs').__express);
+app.set('views', './');
 var names = {};
 
 app.get('/', function (req, res) {
-
+  var results = computeResults();
+  res.render('index.html', {
+    expectedResults: expectedResults,
+    results: results,
+    containers: names,
+    now: new Date().getTime(),
+    timeout: timeout,
+    _: _
+  });
 });
 
 app.get('/statusfull', function (req, res) {
@@ -75,8 +85,8 @@ function computeResults() {
   _.forEach(_.keys(expectedResults), function (name) {
     results[name] = 0;
     if (names[name]) {
-      _.forOwn(names[name], function (date) {
-        if (now - date < timeout) results[name]++;
+      _.forOwn(names[name], function (data) {
+        if (now - data.date < timeout) results[name]++;
       });
     }
   });
@@ -89,7 +99,10 @@ app.get('/ping/:id/:name', function (req, res) {
   var name = req.params.name;
   if (conf.debug) console.log('\n', new Date(), 'ping from id: ' + id + '; name: ' + name);
   if (!names[name]) names[name] = {};
-  names[name][id] = new Date().getTime();
+  names[name][id] = {
+    date: new Date().getTime(),
+    ip: req.ip
+  };
 });
 
 app.listen(conf.port);
