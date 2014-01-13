@@ -23,14 +23,14 @@ var conf = {
 };
 console.log('Using configuration', conf);
 
-var file;
+var expectedResults;
 try {
-  file = JSON.parse(fs.readFileSync(conf.file, {encoding: 'utf8'}));
+  expectedResults = JSON.parse(fs.readFileSync(conf.file, {encoding: 'utf8'}));
 } catch (err) {
   console.error('Cannot read expected results file', err);
   process.exit(1);
 }
-console.log('Expected results', file);
+console.log('Expected results', expectedResults);
 
 /* Rest services */
 
@@ -41,24 +41,43 @@ app.get('/', function (req, res) {
 
 });
 
+app.get('/statusfull', function (req, res) {
+  var results = computeResults();
+  var json = {};
+  _.forEach(_.keys(results), function (name) {
+    json[name] = (results[name] === expectedResults[name])
+      ? 'UP'
+      : 'DOWN;' + results[name] + '/' + expectedResults[name];
+  });
+  if (conf.debug) console.log('\n', new Date(), 'full status asked', names, json);
+  res.json(json);
+});
+
 app.get('/status', function (req, res) {
-  var result = {};
+  var results = computeResults();
+  var json = {};
+  _.forEach(_.keys(results), function (name) {
+    json[name] = (results[name] >= 1)
+      ? 'UP;' + results[name] + '/' + expectedResults[name]
+      : 'DOWN;' + results[name] + '/' + expectedResults[name];
+  });
+  if (conf.debug) console.log('\n', new Date(), 'status asked', names, json);
+  res.json(json);
+});
+
+function computeResults() {
+  var results = {};
   var now = new Date().getTime();
-  var expNames = _.keys(file);
-  _.forEach(expNames, function (expName) {
-    var expCount = file[expName];
-    result[expName] = 'DOWN;0/' + expCount + 'UP';
-    if (names[expName]) {
-      var upCount = 0;
-      _.forOwn(names[expName], function (date) {
-        if (now - date < timeout) upCount++;
+  _.forEach(_.keys(expectedResults), function (name) {
+    results[name] = 0;
+    if (names[name]) {
+      _.forOwn(names[name], function (date) {
+        if (now - date < timeout) results[name]++;
       });
-      result[expName] = (upCount === expCount) ? 'UP' : ('DOWN;' + upCount + '/' + expCount + 'UP');
     }
   });
-  if (conf.debug) console.log('\n', new Date(), 'status asked', names, result);
-  res.json(result);
-});
+  return results;
+}
 
 app.get('/ping/:id/:name', function (req, res) {
   res.send(200);
