@@ -44,25 +44,29 @@ app.get('/', function (req, res) {
 app.get('/statusfull', function (req, res) {
   var results = computeResults();
   var json = {};
+  var status = 200;
   _.forEach(_.keys(results), function (name) {
-    json[name] = (results[name] === expectedResults[name])
-      ? 'UP'
-      : 'DOWN;' + results[name] + '/' + expectedResults[name];
+    var up = (results[name] === expectedResults[name]);
+    json[name] = up ? 'UP' : 'DOWN;' + results[name] + '/' + expectedResults[name];
+    if (!up) status = 500;
   });
   if (conf.debug) console.log('\n', new Date(), 'full status asked', names, json);
-  res.json(json);
+  res.json(status, json);
 });
 
 app.get('/status', function (req, res) {
   var results = computeResults();
   var json = {};
+  var status = 200;
   _.forEach(_.keys(results), function (name) {
-    json[name] = (results[name] >= 1)
+    var up = (results[name] >= 1);
+    json[name] = up
       ? 'UP;' + results[name] + '/' + expectedResults[name]
       : 'DOWN;' + results[name] + '/' + expectedResults[name];
+    if (!up) status = 500;
   });
   if (conf.debug) console.log('\n', new Date(), 'status asked', names, json);
-  res.json(json);
+  res.json(status, json);
 });
 
 function computeResults() {
