@@ -43,7 +43,7 @@ for (var name in expectedContainerTypes) {
 var app = express();
 app.engine('html', require('ejs').__express);
 app.use('/static', express.static(__dirname + '/static'));
-app.set('views', './');
+app.set('views', __dirname);
 
 app.get('/', function (req, res) {
   computeResults();
