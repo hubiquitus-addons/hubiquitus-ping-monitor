@@ -31,11 +31,11 @@
     </tr>
   </thead>
   <tbody>
-    <% _.forEach(containers, function (info, name) {
-      if (info.upCount === info.expectedUpCount) {
+    <% _.forEach(containerTypes, function (containerType, name) {
+      if (containerType.upCount === containerType.expectedUpCount) {
         cls = 'success';
         icon = 'ok';
-      } else if (info.upCount > 0) {
+      } else if (containerType.upCount > 0) {
         cls = 'warning';
         icon = 'minus';
       } else {
@@ -44,21 +44,21 @@
       }
     %>
       <tr class="<%= cls %>">
-        <td rowspan="<%= _.keys(info.containers).length + 1 %>" class="name">
+        <td rowspan="<%= _.keys(containerType.containers).length + 1 %>" class="name">
           <b><%= name %></b><br>
           <span class="badge badge-<%= cls %>"><i class="glyphicon glyphicon-<%= icon %>"></i></span>
         </td>
         <td colspan="3" class="upCount">
-          <b><%= info.upCount %> / <%= info.expectedUpCount %> UP</b>
+          <b><%= containerType.upCount %> / <%= containerType.expectedUpCount %> UP</b>
         </td>
       </tr>
-      <% _.forEach(info.containers, function (cinfo, cid) {
-        cls = (now - cinfo.date <= timeout) ? 'success' : 'danger';
+      <% _.forEach(containerType.containers, function (container, id) {
+        cls = (now - container.date <= timeout) ? 'success' : 'danger';
       %>
         <tr class="<%= cls %>">
-          <td><%= cid %></td>
-          <td><%= cinfo.ip %></td>
-          <td><%= moment(cinfo.date).format('YYYY-MM-DD hh:mm:ss') %></td>
+          <td><%= id %></td>
+          <td><%= container.ip %></td>
+          <td><%= moment(container.date).format('YYYY-MM-DD hh:mm:ss') %></td>
         </tr>
       <% }); %>
     <% }); %>

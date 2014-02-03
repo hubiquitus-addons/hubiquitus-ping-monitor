@@ -24,14 +24,19 @@ var conf = {
 };
 console.log('Using configuration', conf);
 
-var expectedResults;
+var expectedContainerTypes;
 try {
-  expectedResults = JSON.parse(fs.readFileSync(conf.file, {encoding: 'utf8'}));
+  expectedContainerTypes = JSON.parse(fs.readFileSync(conf.file, {encoding: 'utf8'}));
 } catch (err) {
   console.error('Cannot read expected results file', err);
   process.exit(1);
 }
-console.log('Expected results', expectedResults);
+console.log('Expected results', expectedContainerTypes);
+
+var containerTypes = {};
+for (var name in expectedContainerTypes) {
+  registerName(name);
+}
 
 /* Rest services */
 
@@ -39,22 +44,14 @@ var app = express();
 app.engine('html', require('ejs').__express);
 app.use('/static', express.static(__dirname + '/static'));
 app.set('views', './');
-var names = {};
 
 app.get('/', function (req, res) {
-  var results = computeResults();
+  computeResults();
   var data = {};
-  _.forEach(names, function (containers, name) {
-    data[name] = {
-      expectedUpCount: expectedResults[name],
-      upCount: results[name],
-      containers: containers
-    }
-  });
   if (conf.debug) console.log('\n', new Date(), 'rendering', data);
   res.render('index.html', {
-    containers: data,
-    now: new Date().getTime(),
+    containerTypes: containerTypes,
+    now: Date.now(),
     timeout: timeout,
     _: _,
     moment: moment
@@ -62,58 +59,74 @@ app.get('/', function (req, res) {
 });
 
 app.get('/statusfull', function (req, res) {
-  var results = computeResults();
+  computeResults();
   var json = {};
   var status = 200;
-  _.forEach(_.keys(results), function (name) {
-    var up = (results[name] === expectedResults[name]);
-    json[name] = up ? 'UP' : 'DOWN;' + results[name] + '/' + expectedResults[name];
+  _.forEach(containerTypes, function (containerType, name) {
+    var up = (containerType.upCount >= containerType.expectedUpCount);
+    json[name] = up
+      ? 'UP;' + containerType.upCount + '/' + containerType.expectedUpCount
+      : 'DOWN;' + containerType.upCount + '/' + containerType.expectedUpCount;
     if (!up) status = 500;
   });
-  if (conf.debug) console.log('\n', new Date(), 'full status asked', names, json);
+  if (conf.debug) console.log('\n', new Date(), 'full status asked', containerTypes, json);
   res.json(status, json);
 });
 
 app.get('/status', function (req, res) {
-  var results = computeResults();
+  computeResults();
   var json = {};
   var status = 200;
-  _.forEach(_.keys(results), function (name) {
-    var up = (results[name] >= 1);
+  _.forEach(containerTypes, function (containerType, name) {
+    var up = (containerType.upCount >= 1);
     json[name] = up
-      ? 'UP;' + results[name] + '/' + expectedResults[name]
-      : 'DOWN;' + results[name] + '/' + expectedResults[name];
+      ? 'UP;' + containerType.upCount + '/' + containerType.expectedUpCount
+      : 'DOWN;' + containerType.upCount + '/' + containerType.expectedUpCount;
     if (!up) status = 500;
   });
-  if (conf.debug) console.log('\n', new Date(), 'status asked', names, json);
+  if (conf.debug) console.log('\n', new Date(), 'status asked', containerTypes, json);
   res.json(status, json);
 });
-
-function computeResults() {
-  var results = {};
-  var now = new Date().getTime();
-  _.forEach(_.keys(expectedResults), function (name) {
-    results[name] = 0;
-    if (names[name]) {
-      _.forOwn(names[name], function (data) {
-        if (now - data.date < timeout) results[name]++;
-      });
-    }
-  });
-  return results;
-}
 
 app.get('/ping/:id/:name', function (req, res) {
   res.send(200);
   var id = req.params.id;
   var name = req.params.name;
   if (conf.debug) console.log('\n', new Date(), 'ping from id: ' + id + '; name: ' + name);
-  if (!names[name]) names[name] = {};
-  names[name][id] = {
-    date: new Date().getTime(),
-    ip: req.ip
+  registerName(name);
+  containerTypes[name].containers[id] = {
+    date: Date.now(),
+    ip: req.ip,
+    up: true
   };
 });
 
 app.listen(conf.port);
 console.log('App running at http://*:' + conf.port);
+
+/* Functions */
+
+function computeResults() {
+  var now = Date.now();
+  _.forEach(containerTypes, function (containerType) {
+    containerType.upCount = 0;
+    _.forEach(containerType.containers, function (container) {
+      if (now - container.date < timeout) {
+        container.up = true;
+        containerType.upCount++;
+      } else {
+        container.up = false;
+      }
+    });
+  });
+}
+
+function registerName(name) {
+  if (!containerTypes[name]) {
+    containerTypes[name] = {
+      expectedUpCount: expectedContainerTypes[name] || 0,
+      containers: {},
+      upCount: 0
+    }
+  }
+}
