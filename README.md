@@ -41,6 +41,6 @@ Launch hubiquitus-ping-monitor with :
 Note that you may have to wait up to 30 seconds so that pings are received by your monitor.
 On the monitoring webapp, the main page will then display :
 
-![alt tag](./h-ping-monitor.png)
+![alt tag](./screenshots/h-ping-monitor.png)
 
 We can see that the *c1* container and both *c2* containers are running.
