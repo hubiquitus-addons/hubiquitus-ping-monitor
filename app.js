@@ -14,8 +14,8 @@ const timeout = 60000;
 commander
   .version(version)
   .option('-p, --port [n]', 'HTTP port', parseInt)
-  .option('-d, --debug', 'Debug')
-  .option('-f, --file <p>', 'File containing expected results')
+  .option('-d, --debug', 'debug')
+  .option('-f, --file <p>', 'configuration file')
   .parse(process.argv);
 
 var conf = {

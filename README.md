@@ -33,7 +33,7 @@ monitoringConf.json
   "c2": 2
 }
 ```
-This configuration file specifies that two containers are being followed, one **c1** and two **c2** containers.
+This configuration file specifies that the monitoring app expects three containers to ping : one **c1** and two **c2** containers.
 Launch hubiquitus-ping-monitor with :
 
     $ h-ping-monitor -f path/to/Conf.json
