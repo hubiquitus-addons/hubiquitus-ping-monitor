@@ -3,6 +3,7 @@
 var express = require('express');
 var _ = require('lodash');
 var commander = require('commander');
+var version = require('./package').version;
 var fs = require('fs');
 var moment = require('moment');
 
@@ -11,7 +12,7 @@ const timeout = 60000;
 /* Configuration */
 
 commander
-  .version('0.0.1')
+  .version(version)
   .option('-p, --port [n]', 'HTTP port', parseInt)
   .option('-d, --debug', 'Debug')
   .option('-f, --file <p>', 'File containing expected results')
