@@ -10,7 +10,7 @@ This webapp provides
 
 Install the module with :
 
-    $ npm install -g hubiquitus-logger-mongo
+    $ npm install -g hubiquitus-ping-monitor
 
 Note : the `-g` option needs root privileges.
 
