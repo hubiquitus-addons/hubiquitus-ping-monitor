@@ -42,6 +42,7 @@ for (var name in expectedContainerTypes) {
 /* Rest services */
 
 var app = express();
+app.use(express.bodyParser());
 app.engine('html', require('ejs').__express);
 app.use('/static', express.static(__dirname + '/static'));
 app.set('views', __dirname);
@@ -51,6 +52,19 @@ app.get('/', function (req, res) {
   var data = {};
   if (conf.debug) console.log('\n', new Date(), 'rendering', data);
   res.render('index.html', {
+    containerTypes: containerTypes,
+    now: Date.now(),
+    timeout: timeout,
+    _: _,
+    moment: moment
+  });
+});
+
+app.get('/addons', function (req, res) {
+  computeResults();
+  var data = {};
+  if (conf.debug) console.log('\n', new Date(), 'rendering', data);
+  res.render('addons.html', {
     containerTypes: containerTypes,
     now: Date.now(),
     timeout: timeout,
@@ -89,15 +103,17 @@ app.get('/status', function (req, res) {
   res.json(status, json);
 });
 
-app.get('/ping/:id/:name', function (req, res) {
+app.post('/ping/:id/:name', function (req, res) {
   res.send(200);
   var id = req.params.id;
   var name = req.params.name;
+  var failsafe = req.param('failsafe');
   if (conf.debug) console.log('\n', new Date(), 'ping from id: ' + id + '; name: ' + name);
   registerName(name);
   containerTypes[name].containers[id] = {
     date: Date.now(),
     ip: req.ip,
+    failsafe: failsafe,
     up: true
   };
 });
