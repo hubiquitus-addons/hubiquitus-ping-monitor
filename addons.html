@@ -56,7 +56,7 @@
       %>
         <tr class="<%= cls %>">
           <td><%= id %></td>
-          <td><%= container.failsafe %></td>
+          <td><pre><%=  container.failsafe ? JSON.stringify(container.failsafe, null, 2).replace(/\\n/gi, '\n') : null %></pre></td>
         </tr>
       <% }); %>
     <% }); %>
